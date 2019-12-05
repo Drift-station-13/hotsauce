@@ -1,0 +1,74 @@
+<input type="file" />
+<br>
+
+<script>
+
+
+
+document.querySelector("input").addEventListener("change",function(e) {
+	console.log("->");
+	
+	var file = e.target.files[0];
+	if (!file)
+		return;
+	
+	var reader = new FileReader();
+	reader.onload = function(e) {
+		var data = e.target.result;
+		
+		var dims = new Uint16Array(data,0,3);
+		
+		var x = dims[0];
+		var y = dims[1];
+		var z = dims[2];
+		
+		for (var j=0;j<z;j++) {
+			var canvas = document.createElement("canvas");
+			var ctx = canvas.getContext("2d");
+			document.body.appendChild(canvas);    
+			
+			canvas.width = x;
+			canvas.height = y;
+			
+			var map = new Uint32Array(data,8);
+			
+			var map_img = ctx.createImageData(x, y);
+			
+			var base = j*x*y*3;
+			
+			for (var i=0;i<x*y;i++) {
+				var o = 0;
+				var n = map[base+i*3+o];
+				map_img.data[i*4] = (map[base+i*3]!=0)?255:0;
+				map_img.data[i*4+1] = (map[base+i*3+1]!=0)?255:0;
+				map_img.data[i*4+2] = (map[base+i*3+2]!=0xFFFF)?255:0;//n;
+				map_img.data[i*4+3] = 255;
+			}
+			
+			ctx.putImageData(map_img,0,0);
+			
+		}
+		
+		/*canvas.width = x;
+		canvas.height = y;
+		
+		var map = new Uint32Array(data,8);
+		
+		var base = j*x*y*3;
+		
+		var map_img = ctx.createImageData(x, y);
+		for (var i=0;i<x*y;i++) {
+			map_img.data[i*4] = map[base+i*3]%255;
+			map_img.data[i*4+1] = map[base+i*3+1]%255;
+			map_img.data[i*4+2] = map[base+i*3+2]%255;
+			map_img.data[i*4+3] = 255;
+		}
+		
+		ctx.putImageData(map_img,0,0);*/
+		
+		//console.log(dims[0],dims[1],dims[2],dims[3]);
+	}
+	reader.readAsArrayBuffer(file);
+},false);
+
+</script>
